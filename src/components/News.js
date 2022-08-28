@@ -2,15 +2,13 @@ import React, { Component } from 'react';
 import NewsItem from './NewsItem';
 import Spinner from './Spinner';
 import InfiniteScroll from "react-infinite-scroll-component";
+import LoadingBar from 'react-top-loading-bar';
 
 export class News extends Component {
     static defaultProps = ({
         pageSize: 20,
         category: 'general',
-        country: 'in',
-        apiKey: '90d07a0194994afb81b25f2807eb4937'
-        // apiKey : 'd6a8ba1f9dfc49d594149c8e287cdaa9'
-        // use other API Keys if one exhausted
+        country: 'in'
     })
 
     constructor() {
@@ -23,11 +21,20 @@ export class News extends Component {
             dateTime: null,
             author: null
         }
+        console.log("Env variable is  " +process.env.REACT_APP_NEWAPI_KEY);
+    }
+
+    setProgress=(progress)=>{
+        this.setState({
+            progress : progress
+        })
     }
 
     updateNews = async () => {
+        this.setProgress(40);
         let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apiKey}&pageSize=${this.props.pageSize}&page=${this.state.page}`;
         this.setState({ loading: true });
+        this.setProgress(80);
         let data = await fetch(url);
         let parsedData = await data.json();
         this.setState({
@@ -37,6 +44,7 @@ export class News extends Component {
             dateTime: parsedData.publishedAt,
             author: parsedData.author
         });
+        this.setProgress(100);
     }
 
     fetchMoreData = async () => {
@@ -72,6 +80,12 @@ export class News extends Component {
         return (
             <>
                 {/* {this.state.loading && <Spinner/>} */}
+                <LoadingBar
+                    color='#ff0000'
+                    progress={this.state.progress}
+                    height={5}
+                    // onLoaderFinished={() => setProgress(0)}
+                />
                 <InfiniteScroll
                     dataLength={this.state.articles.length}
                     next={this.fetchMoreData}
