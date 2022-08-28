@@ -1,114 +1,89 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import NewsItem from './NewsItem';
 import Spinner from './Spinner';
 import InfiniteScroll from "react-infinite-scroll-component";
 import LoadingBar from 'react-top-loading-bar';
 
-export class News extends Component {
-    static defaultProps = ({
-        pageSize: 20,
-        category: 'general',
-        country: 'in'
-    })
+const News = (props) => {
 
-    constructor() {
-        super();
-        this.state = {
-            articles: [],
-            loading: false,
-            page: 1,
-            totalResults: 0,
-            dateTime: null,
-            author: null
-        }
-        console.log("Env variable is  " +process.env.REACT_APP_NEWAPI_KEY);
-    }
+    const [articles, setArticles] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalResults, setTotalResults] = useState(0);
+    const [progress, setProgress] = useState(0);
+    const [hasMore, setHasMore] = useState(false);
 
-    setProgress=(progress)=>{
-        this.setState({
-            progress : progress
-        })
-    }
-
-    updateNews = async () => {
-        this.setProgress(40);
-        let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apiKey}&pageSize=${this.props.pageSize}&page=${this.state.page}`;
-        this.setState({ loading: true });
-        this.setProgress(80);
+    const updateNews = async () => {
+        setProgress(40);
+        let url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apiKey}&pageSize=${props.pageSize}&page=${page}`;
+        setLoading(true);
+        setProgress(60);
         let data = await fetch(url);
+        setProgress(80);
         let parsedData = await data.json();
-        this.setState({
-            articles: parsedData.articles,
-            totalResults: parsedData.totalResults,
-            loading: false,
-            dateTime: parsedData.publishedAt,
-            author: parsedData.author
-        });
-        this.setProgress(100);
+        setArticles(parsedData.articles);
+        setTotalResults(parsedData.totalResults);
+        setLoading(false);
+        setProgress(100);
     }
 
-    fetchMoreData = async () => {
-        if (this.state.articles.length >= this.state.totalResults) {
-            this.setState({ hasMore: false });
-            console.log("Data khatam hogya");
+    const fetchMoreData = async () => {
+        if (articles.length >= totalResults) {
+            setHasMore(false);
             return;
         }
-        let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apiKey}&pageSize=${this.props.pageSize}&page=${this.state.page + 1}`;
-        this.setState({ loading: true });
+        let url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apiKey}&pageSize=${props.pageSize}&page=${page + 1}`;
+        setLoading(true);
         let data = await fetch(url);
         let parsedData = await data.json();
-        this.setState({
-            articles: this.state.articles.concat(parsedData.articles),
-            totalResults: parsedData.totalResults,
-            loading: false,
-            dateTime: parsedData.publishedAt,
-            author: parsedData.author,
-            page: this.state.page + 1
-        });
+        setArticles(articles.concat(parsedData.articles));
+        setTotalResults(parsedData.totalResults);
+        setLoading(false);
+        setPage(page + 1);
 
     }
 
+    useEffect(() => {
+        updateNews();
+    }, []);
 
-    async componentDidMount() {
-        console.log("Did mount Called");
-        this.updateNews();
-    }
-
-
-
-    render() {
-        return (
-            <>
-                {/* {this.state.loading && <Spinner/>} */}
-                <LoadingBar
-                    color='#ff0000'
-                    progress={this.state.progress}
-                    height={5}
-                    // onLoaderFinished={() => setProgress(0)}
-                />
-                <InfiniteScroll
-                    dataLength={this.state.articles.length}
-                    next={this.fetchMoreData}
-                    hasMore={this.state.articles.length !== this.state.totalResults}
-                    loader={<Spinner />}
-                >
-                    <div className='container my-3'>
-                        <div className="row "  style={{marginTop:'80px'}}>
+    return (
+        <>
+            {/* {state.loading && <Spinner/>} */}
+            <LoadingBar
+                color='#ff0000'
+                progress={progress}
+                height={5}
+            // onLoaderFinished={() => setProgress(0)}
+            />
+            <InfiniteScroll
+                dataLength={articles.length}
+                next={fetchMoreData}
+                hasMore={articles.length !== totalResults}
+                loader={<Spinner />}
+            >
+                <div className='container my-3'>
+                    <div className="row " style={{ marginTop: '80px' }}>
 
 
-                            {this.state.articles.map((element) => {
-                                let placeholder = "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/youtube-thumbnail-design-template-bd73c9b9180d60c8d677aae7e7495d7f_screen.jpg?ts=1593284625"
-                                return <div className="col-md-4 my-3" key={element.url}>
-                                    <NewsItem title={element.title} desc={element.description} imageUrl={element.urlToImage ? element.urlToImage : placeholder} url={element.url} dateTime={element.publishedAt} author={element.author} source={element.source.name} />
-                                </div>
-                            })}
+                        {articles.map((element) => {
+                            let placeholder = "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/youtube-thumbnail-design-template-bd73c9b9180d60c8d677aae7e7495d7f_screen.jpg?ts=1593284625"
+                            return <div className="col-md-4 my-3" key={element.url}>
+                                <NewsItem title={element.title} desc={element.description} imageUrl={element.urlToImage ? element.urlToImage : placeholder} url={element.url} dateTime={element.publishedAt} author={element.author} source={element.source.name} />
+                            </div>
+                        })}
 
-                        </div>
                     </div>
-                </InfiniteScroll>
-            </>
-        );
-    }
+                </div>
+            </InfiniteScroll>
+        </>
+    );
 }
+
+News.defaultProps = ({
+    pageSize: 20,
+    category: 'general',
+    country: 'in'
+})
 
 export default News;

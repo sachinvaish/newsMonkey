@@ -1,8 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import {NavLink } from "react-router-dom";
 
-export class Navbar extends Component {
-  render() {
+const Navbar=()=>{
     return (
       <div>
         <nav className="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
@@ -13,6 +12,7 @@ export class Navbar extends Component {
             </button>
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li><NavLink className='nav-link' exact to="/">Home</NavLink></li>
                  <li><NavLink className='nav-link' exact to="/business">Business</NavLink></li>
                  <li><NavLink className='nav-link' exact to="/entertainment">Entertainment</NavLink></li>
                  <li><NavLink className='nav-link' exact to="/health">Health</NavLink></li>
@@ -25,7 +25,6 @@ export class Navbar extends Component {
         </nav>
       </div>
     );
-  }
 }
 
 export default Navbar;
