@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import React from 'react';
 
 const pageSize = 9;
-const apiKey = process.env.REACT_APP_NEWAPI_KEY ;
+const apiKey = '90d07a0194994afb81b25f2807eb4937' ;
 
 const App =()=> {
 
